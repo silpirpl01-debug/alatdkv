@@ -6,40 +6,34 @@ import { createClient } from "../lib/supabase/supabase";
 export default function Home() {
   return (
     <main className="min-h-screen bg-slate-50">
-
       {/* Hero Banner */}
-      <section className="relative overflow-hidden px-6 py-12 md:py-16">
-        {/* Efek blur abu-abu */}
-        <div className="pointer-events-none absolute left-1/2 top-1/2 h-64 w-4/5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-slate-300/60 blur-3xl" />
+      <section className="relative overflow-hidden px-6 py-8 md:py-12">
+        <div className="relative mx-auto max-w-6xl overflow-hidden rounded-3xl bg-gradient-to-r from-blue-950 via-blue-800 to-blue-600 px-8 py-10 shadow-xl shadow-blue-900/10 md:px-14 md:py-14">
 
-        <div className="relative mx-auto max-w-6xl overflow-hidden rounded-3xl border border-slate-200 bg-white px-7 py-10 shadow-[0_12px_40px_rgba(15,23,42,0.08)] md:px-14 md:py-14">
-          {/* Hiasan blur biru */}
-          <div className="pointer-events-none absolute -right-16 -top-20 h-64 w-64 rounded-full bg-blue-100/80 blur-3xl" />
-          <div className="pointer-events-none absolute -bottom-24 right-1/4 h-48 w-48 rounded-full bg-slate-200/70 blur-3xl" />
+          {/* Efek blur */}
+          <div className="pointer-events-none absolute -right-10 -top-20 h-72 w-72 rounded-full bg-slate-300/30 blur-3xl" />
+          <div className="pointer-events-none absolute bottom-0 right-1/4 h-48 w-48 rounded-full bg-blue-300/20 blur-3xl" />
 
-          <div className="relative max-w-2xl">
-            <p className="mb-4 text-xs font-bold uppercase tracking-[0.18em] text-blue-600">
+          <div className="relative max-w-xl">
+            <p className="mb-4 text-xs font-semibold uppercase tracking-[0.2em] text-blue-200">
               Laboratorium Desain Komunikasi Visual
             </p>
 
-            <h1 className="max-w-xl text-3xl font-bold leading-tight tracking-tight text-slate-900 md:text-5xl">
-              Temukan Alat Laboratorium DKV
+            <h1 className="text-3xl font-bold leading-tight tracking-tight text-white md:text-5xl">
+              Semua Kebutuhan Alat DKV, Lebih Mudah.
             </h1>
 
-            <p className="mt-4 max-w-lg text-sm leading-7 text-slate-500 md:text-base">
-              Cari perlengkapan praktikum dan ajukan peminjaman
-              dengan mudah melalui AlatDKV.
+            <p className="mt-4 max-w-md text-sm leading-7 text-blue-100 md:text-base">
+              Temukan alat laboratorium, cek ketersediaan, dan ajukan peminjaman dalam satu tempat.
             </p>
 
-            <div className="mt-7">
-              <Link
-                href="/alat"
-                className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-600/20 transition hover:-translate-y-0.5 hover:bg-blue-700"
-              >
-                Jelajahi Alat
-                <span aria-hidden="true">→</span>
-              </Link>
-            </div>
+            <Link
+              href="/alat"
+              className="mt-7 inline-flex items-center gap-3 rounded-xl bg-white px-6 py-3 text-sm font-semibold text-blue-800 shadow-lg transition hover:-translate-y-1 hover:bg-blue-50"
+            >
+              Jelajahi Alat
+              <span aria-hidden="true">→</span>
+            </Link>
           </div>
         </div>
       </section>
