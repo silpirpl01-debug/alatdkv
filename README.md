@@ -1,36 +1,123 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
-## Getting Started
+# AlatDKV
 
-First, run the development server:
+Aplikasi peminjaman alat Laboratorium Desain Komunikasi Visual (DKV) untuk membantu siswa melihat ketersediaan alat, mengajukan peminjaman, dan memantau status pengajuan. Admin dapat mengelola alat serta memproses peminjaman.
+
+## 1. Nama Aplikasi dan URL
+
+- Nama aplikasi: AlatDKV
+- Repository GitHub: https://github.com/silpirpl01-debug/alatdkv
+- URL aplikasi: (diisi setelah deploy ke Vercel)
+
+## 2. Cara Menjalankan Aplikasi
+
+### Persyaratan
+- Node.js
+- npm
+- Akun Supabase
+
+### Instalasi
+
+Clone repository:
+
+```bash
+git clone https://github.com/silpirpl01-debug/alatdkv.git
+cd alatdkv
+```
+
+Install dependency:
+
+```bash
+npm install
+```
+
+Buat file `.env.local` di folder utama project dan isi variabel environment yang diperlukan.
+
+Jalankan development server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Buka aplikasi melalui:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+http://localhost:3000
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### Variabel Environment
 
-## Learn More
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
+- `SUPABASE_SECRET_KEY`
+- `SESSION_SECRET`
 
-To learn more about Next.js, take a look at the following resources:
+Nilai variabel environment tidak dicantumkan dalam repository.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 3. Daftar Halaman dan Fungsi
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+| Halaman | Fungsi |
+|---|---|
+| `/` | Halaman utama aplikasi |
+| `/alat` | Menampilkan daftar alat yang tersedia |
+| `/alat/[id]` | Menampilkan detail alat |
+| `/ajukan` | Formulir pengajuan peminjaman |
+| `/cek` | Mengecek status peminjaman |
+| `/admin/login` | Login admin |
+| `/admin` | Dashboard pengelolaan peminjaman |
+| `/admin/alat` | Pengelolaan data alat |
 
-## Deploy on Vercel
+## 4. Aturan Bisnis
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- Peminjaman hanya dapat diajukan jika alat tersedia.
+- Tanggal peminjaman tidak boleh sebelum tanggal hari ini.
+- Tanggal peminjaman dibatasi maksimal 14 hari ke depan.
+- Peminjaman hanya dilakukan pada hari kerja.
+- Tanggal pengembalian tidak boleh sebelum tanggal peminjaman.
+- Durasi peminjaman maksimal 3 hari.
+- Jumlah alat yang dipinjam harus sesuai stok yang tersedia.
+- Data peminjaman harus diisi dengan lengkap dan valid.
+- Pengajuan diproses oleh admin.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Aturan validasi diterapkan pada form dan server untuk memastikan data pengajuan sesuai ketentuan aplikasi.
+
+## 5. Keamanan Aplikasi
+
+- Pengelolaan admin memerlukan autentikasi.
+- Halaman admin dilindungi session login.
+- Supabase Row Level Security (RLS) digunakan untuk membatasi akses data.
+- Data alat dapat dibaca oleh pengguna sesuai kebijakan akses database.
+- Operasi pengelolaan data dibatasi untuk akses yang berwenang.
+- Secret key dan session secret disimpan dalam environment variable.
+- File environment tidak dimasukkan ke repository GitHub.
+
+## 6. Masalah yang Ditemui dan Perbaikan
+
+### Masalah koneksi Supabase
+Gejala:
+Aplikasi mengalami error ketika mencoba mengambil data dari Supabase.
+
+Penyebab:
+Konfigurasi environment variable dan koneksi Supabase belum sesuai.
+
+Perbaikan:
+Memperbaiki nama variabel environment dan konfigurasi client Supabase.
+
+### Masalah saat menggunakan cookies
+Gejala:
+Muncul error terkait `Blocking RouteServer` ketika halaman mengakses cookies atau data.
+
+Perbaikan:
+Menyesuaikan penggunaan cookies dan proses pengambilan data pada halaman Next.js.
+
+### Masalah konfigurasi build
+Gejala:
+Terjadi error saat proses build akibat konfigurasi dynamic rendering.
+
+Perbaikan:
+Menyesuaikan konfigurasi halaman dengan pengaturan Next.js yang digunakan.
+
+## 7. Bagian yang Belum Selesai
+
+- Deployment aplikasi ke Vercel.
+- Pengujian aplikasi pada URL online.
+- Pemeriksaan akhir dokumentasi dan database.
+- Persiapan presentasi dan demonstrasi aplikasi.

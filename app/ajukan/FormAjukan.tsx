@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useState, type FormEvent } from "react";
 import Link from "next/link";
 import {
   submitPeminjaman,
@@ -76,15 +76,104 @@ export default function FormAjukan({
     keperluan: "",
   });
 
+  const [clientErrors, setClientErrors] = useState<
+    Partial<Record<FieldName, string>>
+  >({});
+
   function ubahNilai(field: keyof FormValues, value: string) {
     setValues((sebelumnya) => ({
       ...sebelumnya,
       [field]: value,
     }));
+
+    setClientErrors((sebelumnya) => ({
+      ...sebelumnya,
+      [field]: "",
+    }));
   }
 
   function error(field: FieldName) {
+    if (field in clientErrors) {
+      return clientErrors[field];
+    }
+
     return state.fieldErrors?.[field];
+  }
+
+  function inputClass(field: FieldName) {
+    return `w-full rounded-lg border ${
+      error(field)
+        ? "border-red-500 bg-red-50"
+        : "border-slate-300"
+    } px-4 py-3 text-sm outline-none focus:border-blue-600`;
+  }
+
+  function handleSubmit(e: FormEvent<HTMLFormElement>) {
+    const errors: Partial<Record<FieldName, string>> = {};
+
+    if (!values.alat_id) {
+      errors.alat_id = "Silakan pilih alat.";
+    }
+
+    if (!values.tgl_pinjam) {
+      errors.tgl_pinjam = "Tanggal pinjam wajib diisi.";
+    }
+
+    if (!values.tgl_kembali) {
+      errors.tgl_kembali = "Tanggal kembali wajib diisi.";
+    }
+
+    if (!values.jumlah || Number(values.jumlah) < 1) {
+      errors.jumlah = "Jumlah alat minimal 1.";
+    } else if (!Number.isInteger(Number(values.jumlah))) {
+      errors.jumlah = "Jumlah alat harus berupa bilangan bulat.";
+    } else if (Number(values.jumlah) > 5) {
+      errors.jumlah = "Jumlah alat maksimal 5.";
+    } else {
+      const alatDipilih = alat.find(
+        (item) => item.id === values.alat_id
+      );
+
+      if (
+        alatDipilih &&
+        Number(values.jumlah) > alatDipilih.stok
+      ) {
+        errors.jumlah = `Jumlah melebihi stok yang tersedia (${alatDipilih.stok}).`;
+      }
+    }
+
+    if (!values.peminjam.trim()) {
+      errors.peminjam = "Nama peminjam wajib diisi.";
+    } else if (values.peminjam.trim().length < 3) {
+      errors.peminjam = "Nama minimal 3 karakter.";
+    }
+
+    if (!values.kelas.trim()) {
+      errors.kelas = "Kelas wajib diisi.";
+    } else if (values.kelas.trim().length < 3) {
+      errors.kelas = "Kelas minimal 3 karakter.";
+    }
+
+    if (!values.keperluan.trim()) {
+      errors.keperluan = "Keperluan peminjaman wajib diisi.";
+    } else if (values.keperluan.trim().length < 5) {
+      errors.keperluan = "Keperluan minimal 5 karakter.";
+    }
+
+    if (
+      values.tgl_pinjam &&
+      values.tgl_kembali &&
+      values.tgl_kembali < values.tgl_pinjam
+    ) {
+      errors.tgl_kembali =
+        "Tanggal kembali tidak boleh sebelum tanggal pinjam.";
+    }
+
+    setClientErrors(errors);
+
+    if (Object.keys(errors).length > 0) {
+      e.preventDefault();
+    }
   }
 
   const maxTanggalKembali = values.tgl_pinjam
@@ -126,8 +215,17 @@ export default function FormAjukan({
     );
   }
 
+  const adaError =
+    Object.values(clientErrors).some((pesan) => Boolean(pesan)) ||
+    Boolean(state.message);
+
   return (
-    <form action={formAction} className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+    <form
+      action={formAction}
+      onSubmit={handleSubmit}
+      noValidate
+      className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8"
+    >
       <div className="mb-7">
         <h1 className="text-2xl font-bold text-slate-800">
           Formulir Peminjaman Alat
@@ -138,15 +236,18 @@ export default function FormAjukan({
         </p>
       </div>
 
-      {state.message && (
+      {adaError && (
         <div className="mb-5 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
-          {state.message}
+          {state.message || "Periksa kembali data yang wajib diisi."}
         </div>
       )}
 
       <div className="space-y-5">
         <div>
-          <label htmlFor="alat_id" className="mb-2 block text-sm font-semibold text-slate-700">
+          <label
+            htmlFor="alat_id"
+            className="mb-2 block text-sm font-semibold text-slate-700"
+          >
             Pilih Alat
           </label>
 
@@ -156,7 +257,7 @@ export default function FormAjukan({
             required
             value={values.alat_id}
             onChange={(e) => ubahNilai("alat_id", e.target.value)}
-            className="w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-sm outline-none focus:border-blue-600"
+            className={inputClass("alat_id")}
           >
             {alat.map((item) => (
               <option key={item.id} value={item.id}>
@@ -170,7 +271,10 @@ export default function FormAjukan({
 
         <div className="grid gap-5 sm:grid-cols-2">
           <div>
-            <label htmlFor="tgl_pinjam" className="mb-2 block text-sm font-semibold text-slate-700">
+            <label
+              htmlFor="tgl_pinjam"
+              className="mb-2 block text-sm font-semibold text-slate-700"
+            >
               Tanggal Pinjam
             </label>
 
@@ -183,23 +287,28 @@ export default function FormAjukan({
               max={maxDate}
               value={values.tgl_pinjam}
               onChange={(e) => {
-                ubahNilai("tgl_pinjam", e.target.value);
+                const tanggal = e.target.value;
+
+                ubahNilai("tgl_pinjam", tanggal);
 
                 if (
                   values.tgl_kembali &&
-                  values.tgl_kembali < e.target.value
+                  values.tgl_kembali < tanggal
                 ) {
                   ubahNilai("tgl_kembali", "");
                 }
               }}
-              className="w-full rounded-lg border border-slate-300 px-4 py-3 text-sm outline-none focus:border-blue-600"
+              className={inputClass("tgl_pinjam")}
             />
 
             <ErrorText message={error("tgl_pinjam")} />
           </div>
 
           <div>
-            <label htmlFor="tgl_kembali" className="mb-2 block text-sm font-semibold text-slate-700">
+            <label
+              htmlFor="tgl_kembali"
+              className="mb-2 block text-sm font-semibold text-slate-700"
+            >
               Tanggal Kembali
             </label>
 
@@ -211,8 +320,10 @@ export default function FormAjukan({
               min={values.tgl_pinjam || today}
               max={maxTanggalKembali}
               value={values.tgl_kembali}
-              onChange={(e) => ubahNilai("tgl_kembali", e.target.value)}
-              className="w-full rounded-lg border border-slate-300 px-4 py-3 text-sm outline-none focus:border-blue-600"
+              onChange={(e) =>
+                ubahNilai("tgl_kembali", e.target.value)
+              }
+              className={inputClass("tgl_kembali")}
             />
 
             <ErrorText message={error("tgl_kembali")} />
@@ -220,7 +331,10 @@ export default function FormAjukan({
         </div>
 
         <div>
-          <label htmlFor="jumlah" className="mb-2 block text-sm font-semibold text-slate-700">
+          <label
+            htmlFor="jumlah"
+            className="mb-2 block text-sm font-semibold text-slate-700"
+          >
             Jumlah Alat
           </label>
 
@@ -233,14 +347,17 @@ export default function FormAjukan({
             required
             value={values.jumlah}
             onChange={(e) => ubahNilai("jumlah", e.target.value)}
-            className="w-full rounded-lg border border-slate-300 px-4 py-3 text-sm outline-none focus:border-blue-600"
+            className={inputClass("jumlah")}
           />
 
           <ErrorText message={error("jumlah")} />
         </div>
 
         <div>
-          <label htmlFor="peminjam" className="mb-2 block text-sm font-semibold text-slate-700">
+          <label
+            htmlFor="peminjam"
+            className="mb-2 block text-sm font-semibold text-slate-700"
+          >
             Nama Peminjam
           </label>
 
@@ -254,14 +371,17 @@ export default function FormAjukan({
             value={values.peminjam}
             onChange={(e) => ubahNilai("peminjam", e.target.value)}
             placeholder="Masukkan nama lengkap"
-            className="w-full rounded-lg border border-slate-300 px-4 py-3 text-sm outline-none focus:border-blue-600"
+            className={inputClass("peminjam")}
           />
 
           <ErrorText message={error("peminjam")} />
         </div>
 
         <div>
-          <label htmlFor="kelas" className="mb-2 block text-sm font-semibold text-slate-700">
+          <label
+            htmlFor="kelas"
+            className="mb-2 block text-sm font-semibold text-slate-700"
+          >
             Kelas
           </label>
 
@@ -275,14 +395,17 @@ export default function FormAjukan({
             value={values.kelas}
             onChange={(e) => ubahNilai("kelas", e.target.value)}
             placeholder="Contoh: XII DKV 1"
-            className="w-full rounded-lg border border-slate-300 px-4 py-3 text-sm outline-none focus:border-blue-600"
+            className={inputClass("kelas")}
           />
 
           <ErrorText message={error("kelas")} />
         </div>
 
         <div>
-          <label htmlFor="keperluan" className="mb-2 block text-sm font-semibold text-slate-700">
+          <label
+            htmlFor="keperluan"
+            className="mb-2 block text-sm font-semibold text-slate-700"
+          >
             Keperluan Peminjaman
           </label>
 
@@ -294,9 +417,11 @@ export default function FormAjukan({
             required
             rows={4}
             value={values.keperluan}
-            onChange={(e) => ubahNilai("keperluan", e.target.value)}
+            onChange={(e) =>
+              ubahNilai("keperluan", e.target.value)
+            }
             placeholder="Tuliskan keperluan peminjaman alat"
-            className="w-full resize-y rounded-lg border border-slate-300 px-4 py-3 text-sm outline-none focus:border-blue-600"
+            className={inputClass("keperluan")}
           />
 
           <ErrorText message={error("keperluan")} />
